@@ -44,6 +44,28 @@ library(Hmisc)
     #done to standardize across tabls to allow joining
     ds_user_profiles_skills$Skill <- tolower(ds_user_profiles_skills$Skill)
     ds_user_profiles_skills$Skill <- capitalize(ds_user_profiles_skills$Skill)
+    
+    #split off user profile software
+    ds_user_profiles_software <- ds_user_profiles_skills %>%
+      filter(Skill %in% c("R"
+                          ,"Python"
+                          ,"Sql"
+                          ,"Matlab"
+                          ,"Java"
+                          ,"C++"
+                          ,"Sas"
+                          ,"Hadoop"))
+    
+    #split off user profile software
+    ds_user_profiles_skills <- ds_user_profiles_skills %>%
+      filter(!Skill %in% c("R"
+                          ,"Python"
+                          ,"Sql"
+                          ,"Matlab"
+                          ,"Java"
+                          ,"C++"
+                          ,"Sas"
+                          ,"Hadoop"))
 
     
 #ds_job_postings_skills: 
@@ -84,6 +106,7 @@ library(Hmisc)
 
 
 ds_user_profiles_skills
+ds_user_profiles_software
 ds_job_postings_skills
 ds_job_postings_software
 

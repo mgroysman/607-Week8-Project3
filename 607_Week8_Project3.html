@@ -166,6 +166,28 @@ library(Hmisc)
     #done to standardize across tabls to allow joining
     ds_user_profiles_skills$Skill &lt;- tolower(ds_user_profiles_skills$Skill)
     ds_user_profiles_skills$Skill &lt;- capitalize(ds_user_profiles_skills$Skill)
+    
+    #split off user profile software
+    ds_user_profiles_software &lt;- ds_user_profiles_skills %&gt;%
+      filter(Skill %in% c(&quot;R&quot;
+                          ,&quot;Python&quot;
+                          ,&quot;Sql&quot;
+                          ,&quot;Matlab&quot;
+                          ,&quot;Java&quot;
+                          ,&quot;C++&quot;
+                          ,&quot;Sas&quot;
+                          ,&quot;Hadoop&quot;))
+    
+    #split off user profile software
+    ds_user_profiles_skills &lt;- ds_user_profiles_skills %&gt;%
+      filter(!Skill %in% c(&quot;R&quot;
+                          ,&quot;Python&quot;
+                          ,&quot;Sql&quot;
+                          ,&quot;Matlab&quot;
+                          ,&quot;Java&quot;
+                          ,&quot;C++&quot;
+                          ,&quot;Sas&quot;
+                          ,&quot;Hadoop&quot;))
 
     
 #ds_job_postings_skills: 
@@ -208,25 +230,27 @@ library(Hmisc)
 ds_user_profiles_skills</code></pre>
 <pre><code>##     X                 Skill Percentage
 ## 1   1         Data analysis      55.69
-## 2   2                     R      48.01
-## 3   3                Python      46.31
-## 4   4           Data mining      45.94
-## 5   5      Machine learning      45.32
-## 6   6            Statistics      41.52
-## 7   7                   Sql      39.00
-## 8   8             Analytics      35.16
-## 9   9                Matlab      30.55
-## 10 10                  Java      30.02
-## 11 11  Statistical modeling      27.15
-## 12 12      Algorithm design      27.04
-## 13 13                   C++      25.99
-## 14 14 Business intelligence      23.78
-## 15 15              Big data      23.68
-## 16 16                   Sas      22.78
-## 17 17                Hadoop      20.98
-## 18 18           Programming      19.77
-## 19 19              Research      19.70
-## 20 20  Software engineering      19.51</code></pre>
+## 2   4           Data mining      45.94
+## 3   5      Machine learning      45.32
+## 4   6            Statistics      41.52
+## 5   8             Analytics      35.16
+## 6  11  Statistical modeling      27.15
+## 7  12      Algorithm design      27.04
+## 8  14 Business intelligence      23.78
+## 9  15              Big data      23.68
+## 10 18           Programming      19.77
+## 11 19              Research      19.70
+## 12 20  Software engineering      19.51</code></pre>
+<pre class="r"><code>ds_user_profiles_software</code></pre>
+<pre><code>##    X  Skill Percentage
+## 1  2      R      48.01
+## 2  3 Python      46.31
+## 3  7    Sql      39.00
+## 4  9 Matlab      30.55
+## 5 10   Java      30.02
+## 6 13    C++      25.99
+## 7 16    Sas      22.78
+## 8 17 Hadoop      20.98</code></pre>
 <pre class="r"><code>ds_job_postings_skills</code></pre>
 <pre><code>##       Skill_Type                Skill        Site N_Records
 ## 1  General Skill     Machine learning    LinkedIn     5,701
