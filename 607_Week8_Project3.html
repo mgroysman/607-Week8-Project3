@@ -169,6 +169,8 @@ library(Hmisc)
     
     #split off user profile software
     ds_user_profiles_software &lt;- ds_user_profiles_skills %&gt;%
+      mutate(Skill_Type = &quot;Software/Language Skill&quot;) %&gt;%
+      select(&quot;Skill_Type&quot;, &quot;Skill&quot;, &quot;Percentage&quot;) %&gt;%
       filter(Skill %in% c(&quot;R&quot;
                           ,&quot;Python&quot;
                           ,&quot;Sql&quot;
@@ -180,6 +182,8 @@ library(Hmisc)
     
     #split off user profile software
     ds_user_profiles_skills &lt;- ds_user_profiles_skills %&gt;%
+      mutate(Skill_Type = &quot;General SKill&quot;) %&gt;%
+      select(&quot;Skill_Type&quot;, &quot;Skill&quot;, &quot;Percentage&quot;) %&gt;%
       filter(!Skill %in% c(&quot;R&quot;
                           ,&quot;Python&quot;
                           ,&quot;Sql&quot;
@@ -227,250 +231,33 @@ library(Hmisc)
 
 
 
-ds_user_profiles_skills</code></pre>
-<pre><code>##     X                 Skill Percentage
-## 1   1         Data analysis      55.69
-## 2   4           Data mining      45.94
-## 3   5      Machine learning      45.32
-## 4   6            Statistics      41.52
-## 5   8             Analytics      35.16
-## 6  11  Statistical modeling      27.15
-## 7  12      Algorithm design      27.04
-## 8  14 Business intelligence      23.78
-## 9  15              Big data      23.68
-## 10 18           Programming      19.77
-## 11 19              Research      19.70
-## 12 20  Software engineering      19.51</code></pre>
-<pre class="r"><code>ds_user_profiles_software</code></pre>
-<pre><code>##    X  Skill Percentage
-## 1  2      R      48.01
-## 2  3 Python      46.31
-## 3  7    Sql      39.00
-## 4  9 Matlab      30.55
-## 5 10   Java      30.02
-## 6 13    C++      25.99
-## 7 16    Sas      22.78
-## 8 17 Hadoop      20.98</code></pre>
-<pre class="r"><code>ds_job_postings_skills</code></pre>
-<pre><code>##       Skill_Type                Skill        Site N_Records
-## 1  General Skill     Machine learning    LinkedIn     5,701
-## 2  General Skill             Analysis    LinkedIn     5,168
-## 3  General Skill           Statistics    LinkedIn     4,893
-## 4  General Skill     Computer science    LinkedIn     4,517
-## 5  General Skill        Communication    LinkedIn     3,404
-## 6  General Skill          Mathematics    LinkedIn     2,605
-## 7  General Skill        Visualization    LinkedIn     1,879
-## 8  General Skill         Ai composite    LinkedIn     1,568
-## 9  General Skill        Deep learning    LinkedIn     1,310
-## 10 General Skill        Nlp composite    LinkedIn     1,212
-## 11 General Skill Software development    LinkedIn       732
-## 12 General Skill      Neural networks    LinkedIn       671
-## 13 General Skill     Data engineering    LinkedIn       514
-## 14 General Skill   Project management    LinkedIn       476
-## 15 General Skill Software engineering    LinkedIn       413
-## 16 General Skill                Total    LinkedIn    35,063
-## 17 General Skill     Machine learning      Indeed     3,439
-## 18 General Skill             Analysis      Indeed     3,500
-## 19 General Skill           Statistics      Indeed     2,992
-## 20 General Skill     Computer science      Indeed     2,739
-## 21 General Skill        Communication      Indeed     2,344
-## 22 General Skill          Mathematics      Indeed     1,961
-## 23 General Skill        Visualization      Indeed     1,413
-## 24 General Skill         Ai composite      Indeed     1,125
-## 25 General Skill        Deep learning      Indeed       979
-## 26 General Skill        Nlp composite      Indeed       910
-## 27 General Skill Software development      Indeed       627
-## 28 General Skill      Neural networks      Indeed       485
-## 29 General Skill     Data engineering      Indeed       339
-## 30 General Skill   Project management      Indeed       397
-## 31 General Skill Software engineering      Indeed       295
-## 32 General Skill                Total      Indeed    23,545
-## 33 General Skill     Machine learning SimplyHired     2,561
-## 34 General Skill             Analysis SimplyHired     2,668
-## 35 General Skill           Statistics SimplyHired     2,308
-## 36 General Skill     Computer science SimplyHired     2,093
-## 37 General Skill        Communication SimplyHired     1,791
-## 38 General Skill          Mathematics SimplyHired     1,497
-## 39 General Skill        Visualization SimplyHired     1,153
-## 40 General Skill         Ai composite SimplyHired       811
-## 41 General Skill        Deep learning SimplyHired       675
-## 42 General Skill        Nlp composite SimplyHired       660
-## 43 General Skill Software development SimplyHired       481
-## 44 General Skill      Neural networks SimplyHired       421
-## 45 General Skill     Data engineering SimplyHired       276
-## 46 General Skill   Project management SimplyHired       330
-## 47 General Skill Software engineering SimplyHired       250
-## 48 General Skill                Total SimplyHired    17,975
-## 49 General Skill     Machine learning     Monster     2,340
-## 50 General Skill             Analysis     Monster     3,306
-## 51 General Skill           Statistics     Monster     2,399
-## 52 General Skill     Computer science     Monster     1,900
-## 53 General Skill        Communication     Monster     2,053
-## 54 General Skill          Mathematics     Monster     1,815
-## 55 General Skill        Visualization     Monster     1,207
-## 56 General Skill         Ai composite     Monster       687
-## 57 General Skill        Deep learning     Monster       606
-## 58 General Skill        Nlp composite     Monster       582
-## 59 General Skill Software development     Monster       784
-## 60 General Skill      Neural networks     Monster       305
-## 61 General Skill     Data engineering     Monster       200
-## 62 General Skill   Project management     Monster       348
-## 63 General Skill Software engineering     Monster       512
-## 64 General Skill                Total     Monster    19,044</code></pre>
-<pre class="r"><code>ds_job_postings_software</code></pre>
-<pre><code>##                  Skill_Type        Skill        Site N_Records
-## 1   Software/Language Skill       Python    LinkedIn     6,347
-## 2   Software/Language Skill            R    LinkedIn     4,553
-## 3   Software/Language Skill          Sql    LinkedIn     3,879
-## 4   Software/Language Skill        Spark    LinkedIn     2,169
-## 5   Software/Language Skill       Hadoop    LinkedIn     2,142
-## 6   Software/Language Skill         Java    LinkedIn     1,944
-## 7   Software/Language Skill          Sas    LinkedIn     1,713
-## 8   Software/Language Skill      Tableau    LinkedIn     1,216
-## 9   Software/Language Skill         Hive    LinkedIn     1,182
-## 10  Software/Language Skill        Scala    LinkedIn     1,040
-## 11  Software/Language Skill          C++    LinkedIn     1,024
-## 12  Software/Language Skill          Aws    LinkedIn       947
-## 13  Software/Language Skill   Tensorflow    LinkedIn       844
-## 14  Software/Language Skill       Matlab    LinkedIn       806
-## 15  Software/Language Skill            C    LinkedIn       795
-## 16  Software/Language Skill        Excel    LinkedIn       701
-## 17  Software/Language Skill        Linux    LinkedIn       601
-## 18  Software/Language Skill        Nosql    LinkedIn       598
-## 19  Software/Language Skill        Azure    LinkedIn       578
-## 20  Software/Language Skill Scikit-learn    LinkedIn       474
-## 21  Software/Language Skill         Spss    LinkedIn       452
-## 22  Software/Language Skill       Pandas    LinkedIn       421
-## 23  Software/Language Skill        Numpy    LinkedIn       387
-## 24  Software/Language Skill          Pig    LinkedIn       367
-## 25  Software/Language Skill           D3    LinkedIn       353
-## 26  Software/Language Skill        Keras    LinkedIn       329
-## 27  Software/Language Skill   Javascript    LinkedIn       328
-## 28  Software/Language Skill            C    LinkedIn          
-## 29  Software/Language Skill         Perl    LinkedIn       309
-## 30  Software/Language Skill        Hbase    LinkedIn       302
-## 31  Software/Language Skill       Docker    LinkedIn       290
-## 32  Software/Language Skill          Git    LinkedIn       282
-## 33  Software/Language Skill        Mysql    LinkedIn       278
-## 34  Software/Language Skill      Mongodb    LinkedIn       251
-## 35  Software/Language Skill    Cassandra    LinkedIn       236
-## 36  Software/Language Skill      Pytorch    LinkedIn       214
-## 37  Software/Language Skill        Caffe    LinkedIn       206
-## 38  Software/Language Skill        Total    LinkedIn    38,882
-## 39  Software/Language Skill       Python      Indeed     3,818
-## 40  Software/Language Skill            R      Indeed     3,106
-## 41  Software/Language Skill          Sql      Indeed     2,628
-## 42  Software/Language Skill        Spark      Indeed     1,551
-## 43  Software/Language Skill       Hadoop      Indeed     1,578
-## 44  Software/Language Skill         Java      Indeed     1,377
-## 45  Software/Language Skill          Sas      Indeed     1,134
-## 46  Software/Language Skill      Tableau      Indeed     1,012
-## 47  Software/Language Skill         Hive      Indeed       830
-## 48  Software/Language Skill        Scala      Indeed       739
-## 49  Software/Language Skill          C++      Indeed       765
-## 50  Software/Language Skill          Aws      Indeed       791
-## 51  Software/Language Skill   Tensorflow      Indeed       661
-## 52  Software/Language Skill       Matlab      Indeed       677
-## 53  Software/Language Skill            C      Indeed       492
-## 54  Software/Language Skill        Excel      Indeed       569
-## 55  Software/Language Skill        Linux      Indeed       517
-## 56  Software/Language Skill        Nosql      Indeed       436
-## 57  Software/Language Skill        Azure      Indeed       416
-## 58  Software/Language Skill Scikit-learn      Indeed       402
-## 59  Software/Language Skill         Spss      Indeed       330
-## 60  Software/Language Skill       Pandas      Indeed       330
-## 61  Software/Language Skill        Numpy      Indeed       257
-## 62  Software/Language Skill          Pig      Indeed       296
-## 63  Software/Language Skill           D3      Indeed       149
-## 64  Software/Language Skill        Keras      Indeed       253
-## 65  Software/Language Skill   Javascript      Indeed       245
-## 66  Software/Language Skill            C      Indeed          
-## 67  Software/Language Skill         Perl      Indeed       258
-## 68  Software/Language Skill        Hbase      Indeed       219
-## 69  Software/Language Skill       Docker      Indeed       240
-## 70  Software/Language Skill          Git      Indeed       261
-## 71  Software/Language Skill        Mysql      Indeed       233
-## 72  Software/Language Skill      Mongodb      Indeed       196
-## 73  Software/Language Skill    Cassandra      Indeed       174
-## 74  Software/Language Skill      Pytorch      Indeed       143
-## 75  Software/Language Skill        Caffe      Indeed       149
-## 76  Software/Language Skill        Total      Indeed    27,477
-## 77  Software/Language Skill       Python SimplyHired     2,888
-## 78  Software/Language Skill            R SimplyHired     2,393
-## 79  Software/Language Skill          Sql SimplyHired     2,056
-## 80  Software/Language Skill        Spark SimplyHired     1,167
-## 81  Software/Language Skill       Hadoop SimplyHired     1,164
-## 82  Software/Language Skill         Java SimplyHired     1,059
-## 83  Software/Language Skill          Sas SimplyHired       910
-## 84  Software/Language Skill      Tableau SimplyHired       780
-## 85  Software/Language Skill         Hive SimplyHired       637
-## 86  Software/Language Skill        Scala SimplyHired       589
-## 87  Software/Language Skill          C++ SimplyHired       580
-## 88  Software/Language Skill          Aws SimplyHired       607
-## 89  Software/Language Skill   Tensorflow SimplyHired       501
-## 90  Software/Language Skill       Matlab SimplyHired       544
-## 91  Software/Language Skill            C SimplyHired       384
-## 92  Software/Language Skill        Excel SimplyHired       438
-## 93  Software/Language Skill        Linux SimplyHired       364
-## 94  Software/Language Skill        Nosql SimplyHired       387
-## 95  Software/Language Skill        Azure SimplyHired       285
-## 96  Software/Language Skill Scikit-learn SimplyHired       294
-## 97  Software/Language Skill         Spss SimplyHired       273
-## 98  Software/Language Skill       Pandas SimplyHired       282
-## 99  Software/Language Skill        Numpy SimplyHired       232
-## 100 Software/Language Skill          Pig SimplyHired       231
-## 101 Software/Language Skill           D3 SimplyHired       113
-## 102 Software/Language Skill        Keras SimplyHired       205
-## 103 Software/Language Skill   Javascript SimplyHired       214
-## 104 Software/Language Skill            C SimplyHired          
-## 105 Software/Language Skill         Perl SimplyHired       202
-## 106 Software/Language Skill        Hbase SimplyHired       167
-## 107 Software/Language Skill       Docker SimplyHired       148
-## 108 Software/Language Skill          Git SimplyHired       186
-## 109 Software/Language Skill        Mysql SimplyHired       187
-## 110 Software/Language Skill      Mongodb SimplyHired       165
-## 111 Software/Language Skill    Cassandra SimplyHired       146
-## 112 Software/Language Skill      Pytorch SimplyHired       131
-## 113 Software/Language Skill        Caffe SimplyHired       113
-## 114 Software/Language Skill        Total SimplyHired    21,204
-## 115 Software/Language Skill       Python     Monster     2,544
-## 116 Software/Language Skill            R     Monster     2,365
-## 117 Software/Language Skill          Sql     Monster     1,841
-## 118 Software/Language Skill        Spark     Monster     1,062
-## 119 Software/Language Skill       Hadoop     Monster     1,200
-## 120 Software/Language Skill         Java     Monster     1,002
-## 121 Software/Language Skill          Sas     Monster       978
-## 122 Software/Language Skill      Tableau     Monster       744
-## 123 Software/Language Skill         Hive     Monster       619
-## 124 Software/Language Skill        Scala     Monster       520
-## 125 Software/Language Skill          C++     Monster       439
-## 126 Software/Language Skill          Aws     Monster       467
-## 127 Software/Language Skill   Tensorflow     Monster       385
-## 128 Software/Language Skill       Matlab     Monster       419
-## 129 Software/Language Skill            C     Monster       523
-## 130 Software/Language Skill        Excel     Monster       397
-## 131 Software/Language Skill        Linux     Monster       303
-## 132 Software/Language Skill        Nosql     Monster       362
-## 133 Software/Language Skill        Azure     Monster       272
-## 134 Software/Language Skill Scikit-learn     Monster       212
-## 135 Software/Language Skill         Spss     Monster       202
-## 136 Software/Language Skill       Pandas     Monster       175
-## 137 Software/Language Skill        Numpy     Monster       152
-## 138 Software/Language Skill          Pig     Monster       256
-## 139 Software/Language Skill           D3     Monster        95
-## 140 Software/Language Skill        Keras     Monster       131
-## 141 Software/Language Skill   Javascript     Monster       224
-## 142 Software/Language Skill            C     Monster          
-## 143 Software/Language Skill         Perl     Monster       198
-## 144 Software/Language Skill        Hbase     Monster       138
-## 145 Software/Language Skill       Docker     Monster       194
-## 146 Software/Language Skill          Git     Monster       145
-## 147 Software/Language Skill        Mysql     Monster       121
-## 148 Software/Language Skill      Mongodb     Monster       116
-## 149 Software/Language Skill    Cassandra     Monster       136
-## 150 Software/Language Skill      Pytorch     Monster        98
-## 151 Software/Language Skill        Caffe     Monster        96
-## 152 Software/Language Skill        Total     Monster    19,350</code></pre>
+#ds_user_profiles_skills
+#ds_user_profiles_software
+#ds_job_postings_skills
+#ds_job_postings_software
+
+ds_user_profiles &lt;- union(ds_user_profiles_skills, ds_user_profiles_software)
+
+ds_job_postings &lt;- union(ds_job_postings_skills, ds_job_postings_software)
+
+
+summary(ds_job_postings)</code></pre>
+<pre><code>##   Skill_Type           Skill               Site          
+##  Length:216         Length:216         Length:216        
+##  Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character  
+##   N_Records        
+##  Length:216        
+##  Class :character  
+##  Mode  :character</code></pre>
+<pre class="r"><code>summary(ds_user_profiles)</code></pre>
+<pre><code>##   Skill_Type           Skill             Percentage   
+##  Length:20          Length:20          Min.   :19.51  
+##  Class :character   Class :character   1st Qu.:23.45  
+##  Mode  :character   Mode  :character   Median :28.59  
+##                                        Mean   :32.40  
+##                                        3rd Qu.:42.47  
+##                                        Max.   :55.69</code></pre>
 </div>
 
 
