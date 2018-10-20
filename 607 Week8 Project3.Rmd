@@ -47,6 +47,7 @@ library(Hmisc)
     
     #split off user profile software
     ds_user_profiles_software <- ds_user_profiles_skills %>%
+      mutate(Skill_Type = "Software/Language SKill")
       filter(Skill %in% c("R"
                           ,"Python"
                           ,"Sql"
