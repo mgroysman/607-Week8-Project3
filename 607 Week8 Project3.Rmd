@@ -1,0 +1,93 @@
+---
+title: "607 Week8 Project3"
+author: "Stephanie Roark, Mike Groysman, Zach Herold, and Chad Bailey"
+date: "October 19, 2018"
+---
+
+##Overview
+
+This project is an opportunity to practice both the hard technical skills around R and SQL as well as the soft skills of distance collaboration with classmates. The primary question of this project is: Which are the most valued data science skills? Groups are to seek an answer to this question while also completing each of the following:
+
+* Form a group of 3-5 members
+* Establish the tools the group will use to collaborate
+* Determine what data to collect and how to load it
+* Use R to tidy and transform the data
+* Load the data into a relational database as a set of normalized tables
+* Use R to perform exploritory analysis (and any additional transformations needed)
+* Provide documentation of data sources, transformation, analysis, and results
+* Create a 3-5 minute presentation around the project
+* Submit all code, documentation, presentation, and links to collaboration spaces
+
+## <Insert other documentation>
+
+Load the selected data sources
+```{r}
+file_location_1 <- 'https://raw.githubusercontent.com/ZacharyHerold/CUNY-DATA607/master/SCData.csv'
+ds_user_profiles_skills <- read.table(file_location_1, sep = ",", header = TRUE, stringsAsFactors = FALSE)
+
+
+file_location_2 <- 'https://raw.githubusercontent.com/ZacharyHerold/CUNY-DATA607/master/ds_general_skills_revised.csv'
+ds_job_postings_skills <- read.table(file_location_2, sep = ",", header = TRUE, stringsAsFactors = FALSE)
+
+
+file_location_3 <- 'https://raw.githubusercontent.com/ZacharyHerold/CUNY-DATA607/master/ds_job_listing_software.csv'
+ds_job_postings_software <- read.table(file_location_3, sep = ",", header = TRUE, fill = TRUE, stringsAsFactors = FALSE)
+```
+
+Tidy and transform the data
+```{r message=FALSE}
+library(dplyr)
+library(tidyr)
+library(Hmisc)
+
+#ds_user_profiles_skills: 
+    #done to standardize across tabls to allow joining
+    ds_user_profiles_skills$Skill <- tolower(ds_user_profiles_skills$Skill)
+    ds_user_profiles_skills$Skill <- capitalize(ds_user_profiles_skills$Skill)
+
+    
+#ds_job_postings_skills: 
+    #limit to desired rows
+    ds_job_postings_skills <- ds_job_postings_skills[c(1:15, 17),]
+    
+    #cleanup
+    ds_job_postings_skills <- ds_job_postings_skills %>%
+      mutate(Skill_Type = "General Skill")  %>%
+      rename(Skill = "Keyword") %>%
+      select("Skill_Type", "Skill", "LinkedIn", "Indeed", "SimplyHired", "Monster")
+    
+    #transform to "normalized" structure
+    ds_job_postings_skills <-gather(ds_job_postings_skills, "Site", "N_Records", 3:6)
+
+    #done to standardize across tables to allow joining to other tables
+    ds_job_postings_skills$Skill <- tolower(ds_job_postings_skills$Skill)
+    ds_job_postings_skills$Skill <- capitalize(ds_job_postings_skills$Skill)
+
+    
+#ds_job_postings_software:
+    #limit to desired rows
+    ds_job_postings_software <- ds_job_postings_software[c(1:37, 39),]
+    
+    #cleanup
+    ds_job_postings_software <- ds_job_postings_software %>%
+      mutate(Skill_Type = "Software/Language Skill") %>%
+      rename(Skill = "Keyword") %>%
+      select("Skill_Type", "Skill", "LinkedIn", "Indeed", "SimplyHired", "Monster")
+      
+    #transform to "normalized" structure
+    ds_job_postings_software <-gather(ds_job_postings_software, "Site", "N_Records", 3:6)
+
+    #done to standardize across tabls to allow joining to other tables
+    ds_job_postings_software$Skill <- tolower(ds_job_postings_software$Skill)
+    ds_job_postings_software$Skill <- capitalize(ds_job_postings_software$Skill)
+
+
+
+ds_user_profiles_skills
+ds_job_postings_skills
+ds_job_postings_software
+
+
+
+
+```
