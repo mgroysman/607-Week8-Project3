@@ -236,9 +236,13 @@ library(Hmisc)
 #ds_job_postings_skills
 #ds_job_postings_software
 
-ds_user_profiles &lt;- union(ds_user_profiles_skills, ds_user_profiles_software)
+# union (append) the two user profile datasets
+    ds_user_profiles &lt;- union(ds_user_profiles_skills
+                              ,ds_user_profiles_software)
 
-ds_job_postings &lt;- union(ds_job_postings_skills, ds_job_postings_software)
+# union (append) the two job posting datasets
+ds_job_postings &lt;- union(ds_job_postings_skills
+                         ,ds_job_postings_software)
 
 
 summary(ds_job_postings)</code></pre>
