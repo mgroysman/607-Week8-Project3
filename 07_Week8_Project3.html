@@ -11,7 +11,7 @@
 
 <meta name="author" content="Stephanie Roark, Mike Groysman, Zach Herold, and Chad Bailey" />
 
-<meta name="date" content="2018-10-19" />
+<meta name="date" content="2018-10-21" />
 
 <title>607 Week8 Project3</title>
 
@@ -124,7 +124,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">607 Week8 Project3</h1>
 <h4 class="author"><em>Stephanie Roark, Mike Groysman, Zach Herold, and Chad Bailey</em></h4>
-<h4 class="date"><em>October 19, 2018</em></h4>
+<h4 class="date"><em>October 21, 2018</em></h4>
 
 </div>
 
@@ -265,28 +265,17 @@ ds_job_postings &lt;- ds_job_postings %&gt;%
   select(-N_Postings)
  
 head(ds_job_postings, n=10)</code></pre>
-<pre><code>##                 Skill_Type                Skill     Site N_Records
-## 1  Software/Language Skill               Matlab LinkedIn       806
-## 2            General Skill        Nlp composite LinkedIn      1212
-## 3            General Skill          Mathematics LinkedIn      2605
-## 4  Software/Language Skill                  Git LinkedIn       282
-## 5  Software/Language Skill                Linux LinkedIn       601
-## 6  Software/Language Skill                Caffe LinkedIn       206
-## 7  Software/Language Skill                 Hive LinkedIn      1182
-## 8  Software/Language Skill                  Sql LinkedIn      3879
-## 9            General Skill Software development LinkedIn       732
-## 10           General Skill        Visualization LinkedIn      1879
-##    Pct_Postings
-## 1          9.36
-## 2         14.08
-## 3         30.26
-## 4          3.28
-## 5          6.98
-## 6          2.39
-## 7         13.73
-## 8         45.05
-## 9          8.50
-## 10        21.82</code></pre>
+<pre><code>##                 Skill_Type           Skill     Site N_Records Pct_Postings
+## 1  Software/Language Skill         Mongodb LinkedIn       251         2.92
+## 2  Software/Language Skill           Nosql LinkedIn       598         6.95
+## 3  Software/Language Skill          Matlab LinkedIn       806         9.36
+## 4  Software/Language Skill          Docker LinkedIn       290         3.37
+## 5  Software/Language Skill              D3 LinkedIn       353         4.10
+## 6  Software/Language Skill             Sql LinkedIn      3879        45.05
+## 7  Software/Language Skill    Scikit-learn LinkedIn       474         5.51
+## 8            General Skill    Ai composite LinkedIn      1568        18.21
+## 9            General Skill Neural networks LinkedIn       671         7.79
+## 10           General Skill   Communication LinkedIn      3404        39.54</code></pre>
 <p>Pull the top skills (listed &gt;50% of postings) across sites</p>
 <pre class="r"><code>jp_avg_across_sites &lt;- ds_job_postings %&gt;%
   group_by(Skill_Type, Skill) %&gt;%
