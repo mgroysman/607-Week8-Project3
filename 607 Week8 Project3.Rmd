@@ -31,13 +31,15 @@ ds_job_postings_skills <- read.table(file_location_2, sep = ",", header = TRUE, 
 
 
 file_location_3 <- 'https://raw.githubusercontent.com/ZacharyHerold/CUNY-DATA607/master/ds_job_listing_software.csv'
-ds_job_postings_software <- read.table(file_location_3, sep = ",", header = TRUE, fill = TRUE, stringsAsFactors = FALSE)
+ds_job_postings_software <- read.table(file_location_3, sep = ",", header = TRUE, fill = TRUE, stringsAsFactors = FALSE, strip.white = TRUE, comment.char = "")
+
 ```
 
 Tidy and transform the data
 ```{r message=FALSE}
 
 #load the necessary supporting packages
+library(stringr)
 library(dplyr)
 library(tidyr)
 library(Hmisc)
@@ -45,6 +47,8 @@ library(ggplot2)
 
 #ds_user_profiles_skills: 
     ds_user_profiles <- ds_user_profiles_skills %>%
+      mutate(Skill = tolower(Skill)) %>%
+      mutate(Skill = capitalize(Skill)) %>%
       mutate(Skill_Type = ifelse(Skill %in% c("R"
                                               ,"Python"
                                               ,"Sql"
@@ -55,11 +59,27 @@ library(ggplot2)
                                               ,"Hadoop")
                                  ,"Software/Language Skill"
                                  ,"General Skill")) %>%
-      select("Skill_Type", "Skill", "Percentage") %>%
-      mutate(Skill = tolower(Skill)) %>%
-      mutate(Skill = capitalize(Skill))
+      select("Skill_Type", "Skill", "Percentage")
       
+      
+ 
+#ds_job_postings_n_postings
+    #pull out the total number of postings (to be used later)
+    ds_jp_n_postings <- ds_job_postings_software[c(41),]
     
+    ds_jp_n_postings <- ds_jp_n_postings %>%
+      select("LinkedIn"
+             , "Indeed"
+             , "SimplyHired"
+             , "Monster")
+    
+    ds_jp_n_postings <- gather(ds_jp_n_postings, "Site", "N_Postings", 1:4)
+    ds_jp_n_postings <- ds_jp_n_postings %>%
+      mutate(N_Postings = str_replace_all(N_Postings, ",", "")) %>%
+      mutate(N_Postings = as.numeric(N_Postings))
+    ds_jp_n_postings
+    
+       
 #ds_job_postings_skills: 
     #limit to desired rows
     ds_job_postings_skills <- ds_job_postings_skills[c(1:15, 17),]
@@ -76,6 +96,7 @@ library(ggplot2)
  
     
 #ds_job_postings_software:
+    
     #limit to desired rows
     ds_job_postings_software <- ds_job_postings_software[c(1:37, 39),]
     
@@ -97,23 +118,68 @@ library(ggplot2)
 #tidy the unioned job postings dataset
     ds_job_postings <- ds_job_postings %>%
       rename(Skill = "Keyword") %>%
+      filter(Skill != "Total") %>%
       mutate(Skill = tolower(Skill)) %>%
       mutate(Skill = capitalize(Skill)) 
     
 #transform to "normalized" structure
     ds_job_postings <-gather(ds_job_postings, "Site", "N_Records", 3:6)
     
-#Cast to numeric
+#cast to numeric
     ds_job_postings <- ds_job_postings %>%
+      mutate(N_Records = str_replace_all(N_Records, ",", "")) %>%
+      
+      filter(!is.na(N_Records)) %>%
+      filter(N_Records != "") %>%
       mutate(N_Records = as.numeric(N_Records))
+```
 
 
+Add percent of job postings listing that skill
+```{r}
+ds_job_postings <- inner_join(ds_job_postings
+                              , ds_jp_n_postings
+                              , by = "Site")
+
+ds_job_postings <- ds_job_postings %>%
+  mutate(Pct_Postings = round(N_Records/N_Postings*100, 2)) %>%
+  select(-N_Postings)
+ 
+head(ds_job_postings, n=10)
+```
+
+Pull the top skills (listed >50% of postings) across sites
+```{r}
+jp_avg_across_sites <- ds_job_postings %>%
+  group_by(Skill_Type, Skill) %>%
+  summarise(Avg_Pct_Postings = mean(Pct_Postings)) %>%
+  arrange(desc(Avg_Pct_Postings)) %>%
+  filter(Avg_Pct_Postings >= 50)
+
+jp_avg_across_sites <- as.data.frame(jp_avg_across_sites)
+jp_avg_across_sites
+```
+
+Pull the top skills (listed >50% of postings) across sites  
+Also, review the frequency across sites and the order within sites
+```{r}
+jp_avg_within_sites <- ds_job_postings %>%
+  group_by(Site, Skill_Type, Skill) %>%
+  summarise(Avg_Pct_Postings = mean(Pct_Postings)) %>%
+  arrange(Site, desc(Avg_Pct_Postings)) %>%
+  filter(Avg_Pct_Postings >= 50)
+
+jp_avg_within_sites <- as.data.frame(jp_avg_within_sites)
+jp_avg_within_sites
+```
+
+Compare that to the top skills listed by data scientists
+```{r}
+
+ds_user_profiles %>%
+  arrange(desc(Percentage))
 
 
-
-
-summary(ds_job_postings)
-summary(ds_user_profiles)
 
 
 

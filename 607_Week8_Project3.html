@@ -156,9 +156,10 @@ ds_job_postings_skills &lt;- read.table(file_location_2, sep = &quot;,&quot;, he
 
 
 file_location_3 &lt;- 'https://raw.githubusercontent.com/ZacharyHerold/CUNY-DATA607/master/ds_job_listing_software.csv'
-ds_job_postings_software &lt;- read.table(file_location_3, sep = &quot;,&quot;, header = TRUE, fill = TRUE, stringsAsFactors = FALSE)</code></pre>
+ds_job_postings_software &lt;- read.table(file_location_3, sep = &quot;,&quot;, header = TRUE, fill = TRUE, stringsAsFactors = FALSE, strip.white = TRUE, comment.char = &quot;&quot;)</code></pre>
 <p>Tidy and transform the data</p>
 <pre class="r"><code>#load the necessary supporting packages
+library(stringr)
 library(dplyr)
 library(tidyr)
 library(Hmisc)
@@ -166,6 +167,8 @@ library(ggplot2)
 
 #ds_user_profiles_skills: 
     ds_user_profiles &lt;- ds_user_profiles_skills %&gt;%
+      mutate(Skill = tolower(Skill)) %&gt;%
+      mutate(Skill = capitalize(Skill)) %&gt;%
       mutate(Skill_Type = ifelse(Skill %in% c(&quot;R&quot;
                                               ,&quot;Python&quot;
                                               ,&quot;Sql&quot;
@@ -176,12 +179,31 @@ library(ggplot2)
                                               ,&quot;Hadoop&quot;)
                                  ,&quot;Software/Language Skill&quot;
                                  ,&quot;General Skill&quot;)) %&gt;%
-      select(&quot;Skill_Type&quot;, &quot;Skill&quot;, &quot;Percentage&quot;) %&gt;%
-      mutate(Skill = tolower(Skill)) %&gt;%
-      mutate(Skill = capitalize(Skill))
+      select(&quot;Skill_Type&quot;, &quot;Skill&quot;, &quot;Percentage&quot;)
       
+      
+ 
+#ds_job_postings_n_postings
+    #pull out the total number of postings (to be used later)
+    ds_jp_n_postings &lt;- ds_job_postings_software[c(41),]
     
-#ds_job_postings_skills: 
+    ds_jp_n_postings &lt;- ds_jp_n_postings %&gt;%
+      select(&quot;LinkedIn&quot;
+             , &quot;Indeed&quot;
+             , &quot;SimplyHired&quot;
+             , &quot;Monster&quot;)
+    
+    ds_jp_n_postings &lt;- gather(ds_jp_n_postings, &quot;Site&quot;, &quot;N_Postings&quot;, 1:4)
+    ds_jp_n_postings &lt;- ds_jp_n_postings %&gt;%
+      mutate(N_Postings = str_replace_all(N_Postings, &quot;,&quot;, &quot;&quot;)) %&gt;%
+      mutate(N_Postings = as.numeric(N_Postings))
+    ds_jp_n_postings</code></pre>
+<pre><code>##          Site N_Postings
+## 1    LinkedIn       8610
+## 2      Indeed       5138
+## 3 SimplyHired       3829
+## 4     Monster       3746</code></pre>
+<pre class="r"><code>#ds_job_postings_skills: 
     #limit to desired rows
     ds_job_postings_skills &lt;- ds_job_postings_skills[c(1:15, 17),]
     
@@ -197,6 +219,7 @@ library(ggplot2)
  
     
 #ds_job_postings_software:
+    
     #limit to desired rows
     ds_job_postings_software &lt;- ds_job_postings_software[c(1:37, 39),]
     
@@ -218,34 +241,130 @@ library(ggplot2)
 #tidy the unioned job postings dataset
     ds_job_postings &lt;- ds_job_postings %&gt;%
       rename(Skill = &quot;Keyword&quot;) %&gt;%
+      filter(Skill != &quot;Total&quot;) %&gt;%
       mutate(Skill = tolower(Skill)) %&gt;%
       mutate(Skill = capitalize(Skill)) 
     
 #transform to &quot;normalized&quot; structure
     ds_job_postings &lt;-gather(ds_job_postings, &quot;Site&quot;, &quot;N_Records&quot;, 3:6)
     
-#Cast to numeric
+#cast to numeric
     ds_job_postings &lt;- ds_job_postings %&gt;%
+      mutate(N_Records = str_replace_all(N_Records, &quot;,&quot;, &quot;&quot;)) %&gt;%
+      
+      filter(!is.na(N_Records)) %&gt;%
+      filter(N_Records != &quot;&quot;) %&gt;%
       mutate(N_Records = as.numeric(N_Records))</code></pre>
-<pre><code>## Warning in evalq(as.numeric(N_Records), &lt;environment&gt;): NAs introduced by
-## coercion</code></pre>
-<pre class="r"><code>summary(ds_job_postings)</code></pre>
-<pre><code>##   Skill_Type           Skill               Site             N_Records    
-##  Length:216         Length:216         Length:216         Min.   : 95.0  
-##  Class :character   Class :character   Class :character   1st Qu.:219.0  
-##  Mode  :character   Mode  :character   Mode  :character   Median :339.0  
-##                                                           Mean   :401.1  
-##                                                           3rd Qu.:569.0  
-##                                                           Max.   :979.0  
-##                                                           NA's   :75</code></pre>
-<pre class="r"><code>summary(ds_user_profiles)</code></pre>
-<pre><code>##   Skill_Type           Skill             Percentage   
-##  Length:20          Length:20          Min.   :19.51  
-##  Class :character   Class :character   1st Qu.:23.45  
-##  Mode  :character   Mode  :character   Median :28.59  
-##                                        Mean   :32.40  
-##                                        3rd Qu.:42.47  
-##                                        Max.   :55.69</code></pre>
+<p>Add percent of job postings listing that skill</p>
+<pre class="r"><code>ds_job_postings &lt;- inner_join(ds_job_postings
+                              , ds_jp_n_postings
+                              , by = &quot;Site&quot;)
+
+ds_job_postings &lt;- ds_job_postings %&gt;%
+  mutate(Pct_Postings = round(N_Records/N_Postings*100, 2)) %&gt;%
+  select(-N_Postings)
+ 
+head(ds_job_postings, n=10)</code></pre>
+<pre><code>##                 Skill_Type                Skill     Site N_Records
+## 1  Software/Language Skill               Matlab LinkedIn       806
+## 2            General Skill        Nlp composite LinkedIn      1212
+## 3            General Skill          Mathematics LinkedIn      2605
+## 4  Software/Language Skill                  Git LinkedIn       282
+## 5  Software/Language Skill                Linux LinkedIn       601
+## 6  Software/Language Skill                Caffe LinkedIn       206
+## 7  Software/Language Skill                 Hive LinkedIn      1182
+## 8  Software/Language Skill                  Sql LinkedIn      3879
+## 9            General Skill Software development LinkedIn       732
+## 10           General Skill        Visualization LinkedIn      1879
+##    Pct_Postings
+## 1          9.36
+## 2         14.08
+## 3         30.26
+## 4          3.28
+## 5          6.98
+## 6          2.39
+## 7         13.73
+## 8         45.05
+## 9          8.50
+## 10        21.82</code></pre>
+<p>Pull the top skills (listed &gt;50% of postings) across sites</p>
+<pre class="r"><code>jp_avg_across_sites &lt;- ds_job_postings %&gt;%
+  group_by(Skill_Type, Skill) %&gt;%
+  summarise(Avg_Pct_Postings = mean(Pct_Postings)) %&gt;%
+  arrange(desc(Avg_Pct_Postings)) %&gt;%
+  filter(Avg_Pct_Postings &gt;= 50)
+
+jp_avg_across_sites &lt;- as.data.frame(jp_avg_across_sites)
+jp_avg_across_sites</code></pre>
+<pre><code>##                Skill_Type            Skill Avg_Pct_Postings
+## 1 Software/Language Skill           Python          72.8400
+## 2           General Skill         Analysis          71.5175
+## 3           General Skill Machine learning          65.6225
+## 4           General Skill       Statistics          59.8450
+## 5 Software/Language Skill                R          59.7400
+## 6           General Skill Computer science          52.7875</code></pre>
+<p>Pull the top skills (listed &gt;50% of postings) across sites<br />
+Also, review the frequency across sites and the order within sites</p>
+<pre class="r"><code>jp_avg_within_sites &lt;- ds_job_postings %&gt;%
+  group_by(Site, Skill_Type, Skill) %&gt;%
+  summarise(Avg_Pct_Postings = mean(Pct_Postings)) %&gt;%
+  arrange(Site, desc(Avg_Pct_Postings)) %&gt;%
+  filter(Avg_Pct_Postings &gt;= 50)
+
+jp_avg_within_sites &lt;- as.data.frame(jp_avg_within_sites)
+jp_avg_within_sites</code></pre>
+<pre><code>##           Site              Skill_Type            Skill Avg_Pct_Postings
+## 1       Indeed Software/Language Skill           Python            74.31
+## 2       Indeed           General Skill         Analysis            68.12
+## 3       Indeed           General Skill Machine learning            66.93
+## 4       Indeed Software/Language Skill                R            60.45
+## 5       Indeed           General Skill       Statistics            58.23
+## 6       Indeed           General Skill Computer science            53.31
+## 7       Indeed Software/Language Skill              Sql            51.15
+## 8     LinkedIn Software/Language Skill           Python            73.72
+## 9     LinkedIn           General Skill Machine learning            66.21
+## 10    LinkedIn           General Skill         Analysis            60.02
+## 11    LinkedIn           General Skill       Statistics            56.83
+## 12    LinkedIn Software/Language Skill                R            52.88
+## 13    LinkedIn           General Skill Computer science            52.46
+## 14     Monster           General Skill         Analysis            88.25
+## 15     Monster Software/Language Skill           Python            67.91
+## 16     Monster           General Skill       Statistics            64.04
+## 17     Monster Software/Language Skill                R            63.13
+## 18     Monster           General Skill Machine learning            62.47
+## 19     Monster           General Skill    Communication            54.81
+## 20     Monster           General Skill Computer science            50.72
+## 21 SimplyHired Software/Language Skill           Python            75.42
+## 22 SimplyHired           General Skill         Analysis            69.68
+## 23 SimplyHired           General Skill Machine learning            66.88
+## 24 SimplyHired Software/Language Skill                R            62.50
+## 25 SimplyHired           General Skill       Statistics            60.28
+## 26 SimplyHired           General Skill Computer science            54.66
+## 27 SimplyHired Software/Language Skill              Sql            53.70</code></pre>
+<p>Compare that to the top skills listed by data scientists</p>
+<pre class="r"><code>ds_user_profiles %&gt;%
+  arrange(desc(Percentage))</code></pre>
+<pre><code>##                 Skill_Type                 Skill Percentage
+## 1            General Skill         Data analysis      55.69
+## 2  Software/Language Skill                     R      48.01
+## 3  Software/Language Skill                Python      46.31
+## 4            General Skill           Data mining      45.94
+## 5            General Skill      Machine learning      45.32
+## 6            General Skill            Statistics      41.52
+## 7  Software/Language Skill                   Sql      39.00
+## 8            General Skill             Analytics      35.16
+## 9  Software/Language Skill                Matlab      30.55
+## 10 Software/Language Skill                  Java      30.02
+## 11           General Skill  Statistical modeling      27.15
+## 12           General Skill      Algorithm design      27.04
+## 13 Software/Language Skill                   C++      25.99
+## 14           General Skill Business intelligence      23.78
+## 15           General Skill              Big data      23.68
+## 16 Software/Language Skill                   Sas      22.78
+## 17 Software/Language Skill                Hadoop      20.98
+## 18           General Skill           Programming      19.77
+## 19           General Skill              Research      19.70
+## 20           General Skill  Software engineering      19.51</code></pre>
 </div>
 
 
