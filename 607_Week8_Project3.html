@@ -158,41 +158,28 @@ ds_job_postings_skills &lt;- read.table(file_location_2, sep = &quot;,&quot;, he
 file_location_3 &lt;- 'https://raw.githubusercontent.com/ZacharyHerold/CUNY-DATA607/master/ds_job_listing_software.csv'
 ds_job_postings_software &lt;- read.table(file_location_3, sep = &quot;,&quot;, header = TRUE, fill = TRUE, stringsAsFactors = FALSE)</code></pre>
 <p>Tidy and transform the data</p>
-<pre class="r"><code>library(dplyr)
+<pre class="r"><code>#load the necessary supporting packages
+library(dplyr)
 library(tidyr)
 library(Hmisc)
+library(ggplot2)
 
 #ds_user_profiles_skills: 
-    #done to standardize across tabls to allow joining
-    ds_user_profiles_skills$Skill &lt;- tolower(ds_user_profiles_skills$Skill)
-    ds_user_profiles_skills$Skill &lt;- capitalize(ds_user_profiles_skills$Skill)
-    
-    #split off user profile software
-    ds_user_profiles_software &lt;- ds_user_profiles_skills %&gt;%
-      mutate(Skill_Type = &quot;Software/Language Skill&quot;) %&gt;%
+    ds_user_profiles &lt;- ds_user_profiles_skills %&gt;%
+      mutate(Skill_Type = ifelse(Skill %in% c(&quot;R&quot;
+                                              ,&quot;Python&quot;
+                                              ,&quot;Sql&quot;
+                                              ,&quot;Matlab&quot;
+                                              ,&quot;Java&quot;
+                                              ,&quot;C++&quot;
+                                              ,&quot;Sas&quot;
+                                              ,&quot;Hadoop&quot;)
+                                 ,&quot;Software/Language Skill&quot;
+                                 ,&quot;General Skill&quot;)) %&gt;%
       select(&quot;Skill_Type&quot;, &quot;Skill&quot;, &quot;Percentage&quot;) %&gt;%
-      filter(Skill %in% c(&quot;R&quot;
-                          ,&quot;Python&quot;
-                          ,&quot;Sql&quot;
-                          ,&quot;Matlab&quot;
-                          ,&quot;Java&quot;
-                          ,&quot;C++&quot;
-                          ,&quot;Sas&quot;
-                          ,&quot;Hadoop&quot;))
-    
-    #split off user profile software
-    ds_user_profiles_skills &lt;- ds_user_profiles_skills %&gt;%
-      mutate(Skill_Type = &quot;General SKill&quot;) %&gt;%
-      select(&quot;Skill_Type&quot;, &quot;Skill&quot;, &quot;Percentage&quot;) %&gt;%
-      filter(!Skill %in% c(&quot;R&quot;
-                          ,&quot;Python&quot;
-                          ,&quot;Sql&quot;
-                          ,&quot;Matlab&quot;
-                          ,&quot;Java&quot;
-                          ,&quot;C++&quot;
-                          ,&quot;Sas&quot;
-                          ,&quot;Hadoop&quot;))
-
+      mutate(Skill = tolower(Skill)) %&gt;%
+      mutate(Skill = capitalize(Skill))
+      
     
 #ds_job_postings_skills: 
     #limit to desired rows
@@ -201,16 +188,13 @@ library(Hmisc)
     #cleanup
     ds_job_postings_skills &lt;- ds_job_postings_skills %&gt;%
       mutate(Skill_Type = &quot;General Skill&quot;)  %&gt;%
-      rename(Skill = &quot;Keyword&quot;) %&gt;%
-      select(&quot;Skill_Type&quot;, &quot;Skill&quot;, &quot;LinkedIn&quot;, &quot;Indeed&quot;, &quot;SimplyHired&quot;, &quot;Monster&quot;)
-    
-    #transform to &quot;normalized&quot; structure
-    ds_job_postings_skills &lt;-gather(ds_job_postings_skills, &quot;Site&quot;, &quot;N_Records&quot;, 3:6)
-
-    #done to standardize across tables to allow joining to other tables
-    ds_job_postings_skills$Skill &lt;- tolower(ds_job_postings_skills$Skill)
-    ds_job_postings_skills$Skill &lt;- capitalize(ds_job_postings_skills$Skill)
-
+      select(&quot;Skill_Type&quot;
+             , &quot;Keyword&quot;
+             , &quot;LinkedIn&quot;
+             , &quot;Indeed&quot;
+             , &quot;SimplyHired&quot;
+             , &quot;Monster&quot;)
+ 
     
 #ds_job_postings_software:
     #limit to desired rows
@@ -218,42 +202,42 @@ library(Hmisc)
     
     #cleanup
     ds_job_postings_software &lt;- ds_job_postings_software %&gt;%
+      #filter(c(1:37)) %&gt;%
       mutate(Skill_Type = &quot;Software/Language Skill&quot;) %&gt;%
-      rename(Skill = &quot;Keyword&quot;) %&gt;%
-      select(&quot;Skill_Type&quot;, &quot;Skill&quot;, &quot;LinkedIn&quot;, &quot;Indeed&quot;, &quot;SimplyHired&quot;, &quot;Monster&quot;)
-      
-    #transform to &quot;normalized&quot; structure
-    ds_job_postings_software &lt;-gather(ds_job_postings_software, &quot;Site&quot;, &quot;N_Records&quot;, 3:6)
-
-    #done to standardize across tabls to allow joining to other tables
-    ds_job_postings_software$Skill &lt;- tolower(ds_job_postings_software$Skill)
-    ds_job_postings_software$Skill &lt;- capitalize(ds_job_postings_software$Skill)
-
-
-
-#ds_user_profiles_skills
-#ds_user_profiles_software
-#ds_job_postings_skills
-#ds_job_postings_software
-
-# union (append) the two user profile datasets
-    ds_user_profiles &lt;- union(ds_user_profiles_skills
-                              ,ds_user_profiles_software)
+      select(&quot;Skill_Type&quot;
+             , &quot;Keyword&quot;
+             , &quot;LinkedIn&quot;
+             , &quot;Indeed&quot;
+             , &quot;SimplyHired&quot;
+             , &quot;Monster&quot;)
 
 # union (append) the two job posting datasets
-ds_job_postings &lt;- union(ds_job_postings_skills
-                         ,ds_job_postings_software)
-
-
-summary(ds_job_postings)</code></pre>
-<pre><code>##   Skill_Type           Skill               Site          
-##  Length:216         Length:216         Length:216        
-##  Class :character   Class :character   Class :character  
-##  Mode  :character   Mode  :character   Mode  :character  
-##   N_Records        
-##  Length:216        
-##  Class :character  
-##  Mode  :character</code></pre>
+    ds_job_postings &lt;- union(ds_job_postings_skills
+                             ,ds_job_postings_software)
+              
+#tidy the unioned job postings dataset
+    ds_job_postings &lt;- ds_job_postings %&gt;%
+      rename(Skill = &quot;Keyword&quot;) %&gt;%
+      mutate(Skill = tolower(Skill)) %&gt;%
+      mutate(Skill = capitalize(Skill)) 
+    
+#transform to &quot;normalized&quot; structure
+    ds_job_postings &lt;-gather(ds_job_postings, &quot;Site&quot;, &quot;N_Records&quot;, 3:6)
+    
+#Cast to numeric
+    ds_job_postings &lt;- ds_job_postings %&gt;%
+      mutate(N_Records = as.numeric(N_Records))</code></pre>
+<pre><code>## Warning in evalq(as.numeric(N_Records), &lt;environment&gt;): NAs introduced by
+## coercion</code></pre>
+<pre class="r"><code>summary(ds_job_postings)</code></pre>
+<pre><code>##   Skill_Type           Skill               Site             N_Records    
+##  Length:216         Length:216         Length:216         Min.   : 95.0  
+##  Class :character   Class :character   Class :character   1st Qu.:219.0  
+##  Mode  :character   Mode  :character   Mode  :character   Median :339.0  
+##                                                           Mean   :401.1  
+##                                                           3rd Qu.:569.0  
+##                                                           Max.   :979.0  
+##                                                           NA's   :75</code></pre>
 <pre class="r"><code>summary(ds_user_profiles)</code></pre>
 <pre><code>##   Skill_Type           Skill             Percentage   
 ##  Length:20          Length:20          Min.   :19.51  

@@ -36,41 +36,29 @@ ds_job_postings_software <- read.table(file_location_3, sep = ",", header = TRUE
 
 Tidy and transform the data
 ```{r message=FALSE}
+
+#load the necessary supporting packages
 library(dplyr)
 library(tidyr)
 library(Hmisc)
+library(ggplot2)
 
 #ds_user_profiles_skills: 
-    #done to standardize across tabls to allow joining
-    ds_user_profiles_skills$Skill <- tolower(ds_user_profiles_skills$Skill)
-    ds_user_profiles_skills$Skill <- capitalize(ds_user_profiles_skills$Skill)
-    
-    #split off user profile software
-    ds_user_profiles_software <- ds_user_profiles_skills %>%
-      mutate(Skill_Type = "Software/Language Skill") %>%
+    ds_user_profiles <- ds_user_profiles_skills %>%
+      mutate(Skill_Type = ifelse(Skill %in% c("R"
+                                              ,"Python"
+                                              ,"Sql"
+                                              ,"Matlab"
+                                              ,"Java"
+                                              ,"C++"
+                                              ,"Sas"
+                                              ,"Hadoop")
+                                 ,"Software/Language Skill"
+                                 ,"General Skill")) %>%
       select("Skill_Type", "Skill", "Percentage") %>%
-      filter(Skill %in% c("R"
-                          ,"Python"
-                          ,"Sql"
-                          ,"Matlab"
-                          ,"Java"
-                          ,"C++"
-                          ,"Sas"
-                          ,"Hadoop"))
-    
-    #split off user profile software
-    ds_user_profiles_skills <- ds_user_profiles_skills %>%
-      mutate(Skill_Type = "General SKill") %>%
-      select("Skill_Type", "Skill", "Percentage") %>%
-      filter(!Skill %in% c("R"
-                          ,"Python"
-                          ,"Sql"
-                          ,"Matlab"
-                          ,"Java"
-                          ,"C++"
-                          ,"Sas"
-                          ,"Hadoop"))
-
+      mutate(Skill = tolower(Skill)) %>%
+      mutate(Skill = capitalize(Skill))
+      
     
 #ds_job_postings_skills: 
     #limit to desired rows
@@ -79,16 +67,13 @@ library(Hmisc)
     #cleanup
     ds_job_postings_skills <- ds_job_postings_skills %>%
       mutate(Skill_Type = "General Skill")  %>%
-      rename(Skill = "Keyword") %>%
-      select("Skill_Type", "Skill", "LinkedIn", "Indeed", "SimplyHired", "Monster")
-    
-    #transform to "normalized" structure
-    ds_job_postings_skills <-gather(ds_job_postings_skills, "Site", "N_Records", 3:6)
-
-    #done to standardize across tables to allow joining to other tables
-    ds_job_postings_skills$Skill <- tolower(ds_job_postings_skills$Skill)
-    ds_job_postings_skills$Skill <- capitalize(ds_job_postings_skills$Skill)
-
+      select("Skill_Type"
+             , "Keyword"
+             , "LinkedIn"
+             , "Indeed"
+             , "SimplyHired"
+             , "Monster")
+ 
     
 #ds_job_postings_software:
     #limit to desired rows
@@ -96,31 +81,35 @@ library(Hmisc)
     
     #cleanup
     ds_job_postings_software <- ds_job_postings_software %>%
+      #filter(c(1:37)) %>%
       mutate(Skill_Type = "Software/Language Skill") %>%
-      rename(Skill = "Keyword") %>%
-      select("Skill_Type", "Skill", "LinkedIn", "Indeed", "SimplyHired", "Monster")
-      
-    #transform to "normalized" structure
-    ds_job_postings_software <-gather(ds_job_postings_software, "Site", "N_Records", 3:6)
-
-    #done to standardize across tabls to allow joining to other tables
-    ds_job_postings_software$Skill <- tolower(ds_job_postings_software$Skill)
-    ds_job_postings_software$Skill <- capitalize(ds_job_postings_software$Skill)
-
-
-
-#ds_user_profiles_skills
-#ds_user_profiles_software
-#ds_job_postings_skills
-#ds_job_postings_software
-
-# union (append) the two user profile datasets
-    ds_user_profiles <- union(ds_user_profiles_skills
-                              ,ds_user_profiles_software)
+      select("Skill_Type"
+             , "Keyword"
+             , "LinkedIn"
+             , "Indeed"
+             , "SimplyHired"
+             , "Monster")
 
 # union (append) the two job posting datasets
-ds_job_postings <- union(ds_job_postings_skills
-                         ,ds_job_postings_software)
+    ds_job_postings <- union(ds_job_postings_skills
+                             ,ds_job_postings_software)
+              
+#tidy the unioned job postings dataset
+    ds_job_postings <- ds_job_postings %>%
+      rename(Skill = "Keyword") %>%
+      mutate(Skill = tolower(Skill)) %>%
+      mutate(Skill = capitalize(Skill)) 
+    
+#transform to "normalized" structure
+    ds_job_postings <-gather(ds_job_postings, "Site", "N_Records", 3:6)
+    
+#Cast to numeric
+    ds_job_postings <- ds_job_postings %>%
+      mutate(N_Records = as.numeric(N_Records))
+
+
+
+
 
 
 summary(ds_job_postings)
